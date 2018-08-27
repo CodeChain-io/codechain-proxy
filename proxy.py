@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 from flask import Flask
-from flask import request
+from flask import request, abort
 import requests
 
 if __name__ == '__main__':
@@ -24,8 +24,8 @@ if __name__ == '__main__':
 
     @app.route('/', methods = ['POST'])
     def proxy():
-        if not request.is_json:
-            return '\"Invalid JSON Format\"'
+        if not request.is_json: # Invalid JSON Format
+            abort(404)
         content = request.get_json()
 
         if 'method' in content and content['method'] in app.whitelist:
@@ -33,9 +33,9 @@ if __name__ == '__main__':
                 forward_addr = 'http://localhost:{}'.format(app.forward)
                 r = requests.post(forward_addr, json=content)
                 return r.text
-            except:
-                return 'Failed to get value from the rpc server'
-        else:
-            return '\"Filtered\"'
+            except: # Failed to get value from the rpc server
+                abort(404)
+        else: # Filtered.
+            abort(404)
 
     app.run(host=args.bind, port=args.port)
