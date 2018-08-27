@@ -25,6 +25,7 @@ chain_getNetworkId
 net_isConnected
 net_disconnect
 net_getPeerCount
+net_getEstablishedPeers
 net_getPort
 net_getWhitelist
 net_getBlacklist
