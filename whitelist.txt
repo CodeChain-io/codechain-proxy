@@ -17,6 +17,7 @@ chain_isAssetSpent
 chain_getNonce
 chain_getBalance
 chain_getRegularKey
+chain_getRegularKeyOwner
 chain_getNumberOfShards
 chain_getShardRoot
 chain_getPendingParcels
