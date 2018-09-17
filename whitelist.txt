@@ -4,6 +4,7 @@ commitHash
 chain_getBestBlockNumber
 chain_getBestBlockId
 chain_getBlockHash
+chain_getBlockByNumber
 chain_getBlockByHash
 chain_sendSignedParcel
 chain_getParcel
