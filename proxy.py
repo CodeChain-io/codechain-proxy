@@ -12,15 +12,11 @@ def create(whitelist="whitelist.txt", forward=8080, log="proxy.log", **kwargs):
         app.whitelist = set(line.rstrip() for line in f)
     app.forward = forward
 
-    formatter = logging.Formatter('[%(asctime)s] [%(levelname)s in %(module)s] %(message)s')
     handler = RotatingFileHandler(log, maxBytes=0x100000, backupCount=3)
     handler.setLevel(logging.INFO)
-    handler.setFormatter(formatter)
+    handler.setFormatter(RequestFormatter())
     app.logger.addHandler(handler)
     app.logger.setLevel(logging.INFO)
-
-    def log(address, message, level=logging.INFO):
-        app.logger.log(level, '[{}] {}'.format(address, message))
 
     def error_msg(code, msg, id):
         id = "null" if id is None else id
@@ -40,14 +36,13 @@ def create(whitelist="whitelist.txt", forward=8080, log="proxy.log", **kwargs):
 
     @app.route('/', methods = ['POST'])
     def proxy():
-        raddr = request.remote_addr
         if not request.is_json:
-            log(raddr, 'Received request is not JSON')
+            app.logger.error('Received request is not JSON')
             return invalid_request()
 
         content = request.get_json(silent=True)
         if content is None:
-            log(raddr, 'Failed to parse JSON request: {}'.format(request.data))
+            app.logger.error('Failed to parse JSON request: {}'.format(request.data))
             return parse_error()
 
         if 'id' not in content:
@@ -57,16 +52,28 @@ def create(whitelist="whitelist.txt", forward=8080, log="proxy.log", **kwargs):
             try:
                 forward_addr = 'http://localhost:{}'.format(app.forward)
                 r = requests.post(forward_addr, json=content)
-                log(raddr, 'Successfully forwarded {} / Response {}'.format(content, r.text.strip()))
+                app.logger.info('Successfully forwarded {} / Response {}'.format(content, r.text.strip()))
                 return r.text
             except Exception as e:
-                log(raddr, 'Failed to receive the response from the server: {}'.format(e))
+                app.logger.error('Failed to receive the response from the server: {}'.format(e))
                 return internal_error(content['id'])
         elif 'method' in content:
-            log(raddr, 'Filtered {}: {}'.format(content['method'], content))
+            app.logger.error('Filtered {}: {}'.format(content['method'], content))
             return method_not_found(content['id'])
 
     return app
+
+class RequestFormatter(logging.Formatter):
+    def __init__(self, fmt=None, **kwargs):
+        default_fmt = '[%(asctime)s] [%(levelname)s in %(module)s] [%(remote_addr)s] %(message)s'
+        if fmt is None:
+            super().__init__(fmt=default_fmt, **kwargs)
+        else:
+            super().__init__(**kwargs)
+
+    def format(self, record):
+        record.remote_addr = request.remote_addr
+        return super(RequestFormatter, self).format(record)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
