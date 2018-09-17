@@ -6,30 +6,14 @@ import requests
 import logging
 from logging.handlers import RotatingFileHandler
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--whitelist', default='whitelist.txt',
-                        help='whitelist file path (default: \"whiltelist.txt\")')
-    parser.add_argument('--bind', default='0.0.0.0',
-                        help='binding address (default: 0.0.0.0)')
-    parser.add_argument('--port', type=int,
-                        help='binding port')
-    parser.add_argument('--forward', type=int, default=8080,
-                        help='port to forward (deafult: 8080)')
-    parser.add_argument('--log', default='proxy.log',
-                        help='log file path (default: \"proxy.log\")')
-    parser.add_argument('--debug', action='store_true',
-                        help='enable debug mode')
-
-    args = parser.parse_args()
-
+def create(whitelist="whitelist.txt", forward=8080, log="proxy.log", **kwargs):
     app = Flask(__name__)
-    with open(args.whitelist) as f:
+    with open(whitelist) as f:
         app.whitelist = set(line.rstrip() for line in f)
-    app.forward = args.forward
+    app.forward = forward
 
     formatter = logging.Formatter('[%(asctime)s] [%(levelname)s in %(module)s] %(message)s')
-    handler = RotatingFileHandler(args.log, maxBytes=0x100000, backupCount=3)
+    handler = RotatingFileHandler(log, maxBytes=0x100000, backupCount=3)
     handler.setLevel(logging.INFO)
     handler.setFormatter(formatter)
     app.logger.addHandler(handler)
@@ -82,4 +66,23 @@ if __name__ == '__main__':
             log(raddr, 'Filtered {}: {}'.format(content['method'], content))
             return method_not_found(content['id'])
 
+    return app
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--whitelist', default='whitelist.txt',
+                        help='whitelist file path (default: \"whiltelist.txt\")')
+    parser.add_argument('--bind', default='0.0.0.0',
+                        help='binding address (default: 0.0.0.0)')
+    parser.add_argument('--port', type=int,
+                        help='binding port')
+    parser.add_argument('--forward', type=int, default=8080,
+                        help='port to forward (deafult: 8080)')
+    parser.add_argument('--log', default='proxy.log',
+                        help='log file path (default: \"proxy.log\")')
+    parser.add_argument('--debug', action='store_true',
+                        help='enable debug mode')
+
+    args = parser.parse_args()
+    app = create(**vars(args))
     app.run(host=args.bind, port=args.port, debug=args.debug)
