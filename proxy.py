@@ -5,6 +5,7 @@ from flask import request
 import requests
 import logging
 from logging.handlers import RotatingFileHandler
+from flask_cors import CORS
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -24,6 +25,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     app = Flask(__name__)
+    CORS(app)
+
     with open(args.whitelist) as f:
         app.whitelist = set(line.rstrip() for line in f)
     app.forward = args.forward
