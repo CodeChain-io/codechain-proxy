@@ -37,3 +37,4 @@ mempool_getPendingTransactionsCount
 engine_getCoinbase
 engine_getBlockReward
 engine_getRecommendedConfimation
+engine_getCustomActionData
