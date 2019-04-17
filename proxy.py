@@ -76,8 +76,8 @@ if __name__ == '__main__':
             try:
                 forward_addr = 'http://localhost:{}'.format(app.forward)
                 r = requests.post(forward_addr, json=content)
-                log(raddr, 'Successfully forwarded {} / Response {}'.format(content, r.text.strip()))
-                return r.text
+                log(raddr, 'Successfully forwarded {} / Response {}'.format(content, r.content.strip()))
+                return r.content
             except Exception as e:
                 log(raddr, 'Failed to receive the response from the server: {}'.format(e))
                 return internal_error(content['id'])
