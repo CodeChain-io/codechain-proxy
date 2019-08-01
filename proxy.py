@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 from flask import Flask
+from flask import jsonify
 from flask import request
 import requests
 import logging
@@ -43,7 +44,14 @@ if __name__ == '__main__':
 
     def error_msg(code, msg, id):
         id = "null" if id is None else id
-        return '{{"jsonrpc":"2.0","error":{{"code":{},"message":"{}"}},"id":{}}}\n'.format(code, msg, id)
+        return jsonify(
+            jsonrpc='2.0',
+            error={
+                'code': code,
+                'message': msg,
+            },
+            id=id
+        )
 
     def parse_error():
         return error_msg(-32700, "Parse error", None), 500
