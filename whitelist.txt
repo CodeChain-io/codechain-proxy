@@ -29,6 +29,12 @@ chain_getMiningReward
 chain_executeTransaction
 chain_executeVM
 chain_getNetworkId
+chain_getMinTransactionFee
+chain_getPossibleAuthors
+chain_getTransactionSigner
+chain_getCommonParams
+chain_getMetadataSeq
+chain_getTermMetadata
 mempool_sendSignedTransaction
 mempool_getErrorHint
 mempool_getTransactionResultsByTracker
